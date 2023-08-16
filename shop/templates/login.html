@@ -1,0 +1,38 @@
+{% extends 'base.html' %} {% load static %}{% block content %}
+
+{% if messages %}
+<ul class="messages">
+{% for message in messages %}
+      <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>
+       {{ message }}
+       </li>
+{% endfor %}
+</ul>
+{% endif %}
+<br></br>
+<hr>
+
+{% if user.is_authenticated %}
+<h1>HELLO {{ user.username }}!</h1>
+<a href="{% url 'logout' %}">Logout</a>
+{% else %}
+<h3>please login</h3>
+<!-- login form -->
+<form method="POST" action="{% url 'login_user' %}">
+    {% csrf_token %}
+    Username <input name="username" /> &nbsp; Password <input name="password" type="password" />
+    <input type="submit" value="Login" />          
+</form>
+<!-- login form end -->
+
+<!-- register form -->
+<h2>Register</h2>
+<form method="POST" action="{% url 'user_register' %}">
+{% csrf_token %} Username <input name="username" /> &nbsp; Password <input name="password" type="password" />&nbsp; phone number <input name="phone_number" type="phone_number" />&nbsp; address <input name="address" type="address" />
+<input type="submit" value="Register" />
+</form>
+<!-- register form end -->
+{% endif %}
+<h1>Hello this is my shopping website login page</h1>
+<h2>Welcome!</h2>
+{% endblock %}

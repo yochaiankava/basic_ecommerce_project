@@ -1,0 +1,55 @@
+{% extends 'base.html' %} {% load static %}{% block content %}
+
+<!--search product form-->
+<div class="container-fluid bg-3 text-center">  
+  <form action="{% url 'all_products' %}">
+    <!-- Hidden input for category_name -->
+    <input type="hidden" name="category_name" value="{{ selected_category }}">
+    <input placeholder="Search product" aria-label="Search" name="product_name"/>
+    <input type="submit" value="Search" class="btn btn-success" style="background-color: #006400; border-color: #006400;"/>
+  </form>  
+<!--end search product form-->  
+
+  <!--display products + stock amuunt-->
+  <h2>Products:</h2>
+  <br />
+  <div class="row">
+    {% for product in products %}
+    <div class="col-sm-3">
+      <p>{{ product.name }}</p>
+      <p>Stock:{{ product.stock }}</p>
+      <a>
+      <img src="{% static product.image %}" class="img-responsive" style="width: 60%; height: 200px;" alt="Image" />
+      </a>
+      <!--end display products + stock amuunt-->
+
+      <!--form submit for buying product-->      
+      <form method="POST" action="{% url 'add_product' product.id %}" style="max-width: 400px;">
+        {% csrf_token %}
+        <label for="number">Number:</label>
+        <input type="number" name="number" placeholder="Choose quantity" min="1" value="1" style="width: 60px;" />
+        <input type="submit"  value="Add to Cart" class="btn btn-success"  />
+      </form>
+      <!--end form submit for buying product-->
+
+
+      {% comment %} <a href="{% url 'buy_product' product.id %}" class="btn btn-primary">Buy Ticket</a>
+        {% csrf_token %} Number:<input name="number" />
+        <input type="submit" value="Buy Ticket" class="btn btn-success" />
+      </form>
+      <form method="POST" action="{% url 'update_image' flight.id %}" enctype="multipart/form-data">
+        {% csrf_token %} Image:<input type="file" name="image" />
+        <input type="submit" value="Change Image" class="btn btn-info" />
+      </form>
+
+      <a href="{% url 'single_flight' flight.id %}">
+        <img src="{% static flight.image %}" class="img-responsive" style="width: 100%" alt="Image" />
+      </a> {% endcomment %}
+    </div>
+    {% empty %}
+    <li>No products available.</li>
+    {% endfor %}
+  </div>
+</div>
+<br />
+{% endblock %}
