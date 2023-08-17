@@ -125,9 +125,8 @@ def products(request):
     }
     return render(request, 'products.html', context)
 
-from .models import PurchaseLine
 
-def add_product(request, product_id):
+def add_to_cart(request, product_id):
     print("add product function entered !!!")
     
     if request.method == 'POST':
@@ -142,33 +141,27 @@ def add_product(request, product_id):
                 # Get the product
                 product = Product.objects.get(id=product_id)
                 
-                # Update the product stock
-                product.stock -= number
-                product.save()
+                # Check if a PurchaseLine with the same product already exists in the cart
+                existing_purchase_line = PurchaseLine.objects.filter(product=product, purchase=purchase_cart).first()
                 
-                # Create a new PurchaseLine instance
-                purchase_line = PurchaseLine.objects.create(
-                    product=product,
-                    amount=number,
-                    purchase=purchase_cart
-                )
-                
-                print(f"Added {number} {product.name} to PurchaseCard {purchase_cart.id}")
+                if existing_purchase_line:
+                    # If it exists, update the amount
+                    existing_purchase_line.amount += number
+                    existing_purchase_line.save()
+                    print(f"Updated {number} {product.name} in PurchaseCard {purchase_cart.id}")
+                else:
+                    # If it doesn't exist, create a new PurchaseLine instance
+                    purchase_line = PurchaseLine.objects.create(
+                        product=product,
+                        amount=number,
+                        purchase=purchase_cart
+                    )
+                    print(f"Added {number} {product.name} to PurchaseCard {purchase_cart.id}")
                 
             except Exception as e:
                 print(f"Error adding product to PurchaseCard: {e}")
     
     return redirect('all_products')
-
-# def add_product(request, product_id):
-#     print("add product function entered !!!")
-#     if request.method == 'POST':
-#         number = request.POST.get('number')
-#         print("NUMBER IS", number)
-#     product = Product.objects.get(id=product_id)
-#     product.stock = product.stock - int(number)
-#     product.save()
-#     return redirect('all_products')
 
 def create_purchase_card(request):
     print("create purchase cart function entered !!!")
@@ -221,15 +214,52 @@ def get_customer_cart(request):
     else:
         return get_session_cart(request)        
 
+from .models import PurchaseLine
+
+def view_purchase_cart(request):
+    print("view_purchase_cart function entered !!!")
+    
+    purchase_cart = get_customer_cart(request)
+    
+    # Get category_name and product_name from the GET request
+    category_name = request.GET.get('category_name')
+    product_name = request.GET.get('product_name')
+    
+    # Get all categories
+    all_categories = Category.objects.all()
+    
+    # Get all PurchaseLine instances associated with the purchase cart
+    purchase_lines = purchase_cart.purchaseline_set.all()
+    
+    # Filter products by category_name if provided
+    if category_name:
+        try:
+            selected_category = all_categories.get(name__iexact=category_name)
+        except Category.DoesNotExist:
+            selected_category = None
+            all_products = PurchaseLine.objects.none()
+        else:
+            all_products = purchase_lines.filter(product__category=selected_category)
+    else:
+        selected_category = None
+        all_products = purchase_lines
+    
+    # Filter products by product_name if provided
+    if product_name:
+        all_products = all_products.filter(product__name__icontains=product_name)
+    
+    context = {
+        'products': all_products,
+        'categories': all_categories,
+        'selected_category': category_name,
+        'selected_product': product_name,
+        'purchase_cart': purchase_cart,
+    }
+    print(f"{context}")
+    return render(request, 'cart.html', context)
+
             
     
-def single_product(request, product_id):
-    product = Product.objects.get(id=product_id)
-    context = {
-        'product': product  # Replace 'data' with the data you want to pass to the template
-    }
-    # return HttpResponse(f"Single flight {flight}")
-    return render(request, 'single_flight.html', context)
 
 
 #######
@@ -272,6 +302,13 @@ def buy_products(request):
     }
     return render(request, 'buy_products.html', context)    
 
+def single_product(request, product_id):
+    product = Product.objects.get(id=product_id)
+    context = {
+        'product': product  # Replace 'data' with the data you want to pass to the template
+    }
+    # return HttpResponse(f"Single flight {flight}")
+    return render(request, 'single_flight.html', context)
 
 
 # def get_session_cart(request):

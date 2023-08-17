@@ -36,6 +36,21 @@ class PurchaseCard(models.Model):
     def __str__(self):
         return f"{self.id} - {self.customer} - {self.status}"  
     
+    @property
+    def get_cart_total(self):
+        print("geting cart total items")
+        orderitems = self.purchaseline_set.all()
+        total = sum([item.get_total for item in orderitems])
+        print(f"the total price:{total}")
+        return total
+    
+    @property
+    def get_cart_items(self):
+        print("geting cart items")
+        orderitems = self.purchaseline_set.all()
+        total = sum([item.amount for item in orderitems])
+        return total
+    
 class PurchaseLine(models.Model):
     product = models.ForeignKey(Product, on_delete=models.CASCADE)    
     amount = models.IntegerField(default=0)
@@ -43,5 +58,10 @@ class PurchaseLine(models.Model):
     def __str__(self):
         return f"{self.id} - {self.purchase} - {self.product} - {self.amount}"  
 
-
+    @property
+    def get_total(self):
+        # print("calculate total")
+        total = self.product.price * self.amount
+        # print(f"{total}")
+        return total
     

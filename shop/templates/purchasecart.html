@@ -11,28 +11,25 @@
 <!--end search product form-->  
 
   <!--display products + stock amuunt-->
-  <h2>Products:</h2>
+  <h2>purchase cart products list:</h2>
   <br />
   <div class="row">
-    {% for product in products %}
+    {% for item in items %}
+    <li>
     <div class="col-sm-3">
-      <p>{{ product.name }}</p>
-      <p>Stock:{{ product.stock }}</p>
+      <p>{{ item.product.name }}</p>
+      <p>order amount:{{ item.amount }}</p>
       <a>
-      <img src="{% static product.image %}" class="img-responsive" style="width: 60%; height: 200px;" alt="Image" />
+      <img src="{% static item.product.image %}" class="img-responsive" style="width: 60%; height: 100px;" alt="Image" />
       </a>
       <!--end display products + stock amuunt-->
 
       <!--form submit for buying product-->      
-      <form method="POST" action="{% url 'add_to_cart' product.id %}" style="max-width: 400px;">
+      <form method="POST" action="{% url 'add_product' item.product.id %}" style="max-width: 400px;">
         {% csrf_token %}
-        <br>
-      
-        <input class="hidden" type="number" name="number" placeholder="Choose quantity" min="0" value="1" style="width: 60px;" /> 
-        <input type="submit"  value="Add to Cart" class="btn btn-success"/>
-      </form>
-      <!--end form submit for buying product-->
-
+        <label for="number">Number:</label>
+        <input type="number" name="number" placeholder="Choose quantity" min="1" value="1" style="width: 60px;" />
+        <input type="submit"  value="save" class="btn btn-success"  />  
 
       {% comment %} <a href="{% url 'buy_product' product.id %}" class="btn btn-primary">Buy Ticket</a>
         {% csrf_token %} Number:<input name="number" />
@@ -46,6 +43,7 @@
       <a href="{% url 'single_flight' flight.id %}">
         <img src="{% static flight.image %}" class="img-responsive" style="width: 100%" alt="Image" />
       </a> {% endcomment %}
+    </li>
     </div>
     {% empty %}
     <li>No products available.</li>
