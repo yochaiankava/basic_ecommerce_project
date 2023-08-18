@@ -7,6 +7,8 @@ from shop.models import Category, MyUser, Product, PurchaseCard, PurchaseLine, O
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
+
+
 User = get_user_model()
 
 def login_page(request):
@@ -89,16 +91,15 @@ def products(request):
     print("products function entered !!!") 
     
     purchase_cart = get_customer_cart(request)
-    # session_card = get_session_cart(request)
-    # session_card = create_purchase_card(request)    
-    # Get category_name and product_name from the GET request
+    
     category_name = request.GET.get('category_name')
     product_name = request.GET.get('product_name')
-    # Get all categories
+    # Get all categories & products
     all_categories = Category.objects.all()
+    all_products = Product.objects.all()   
+           
     # Filter products by category_name if provided
-    if category_name:
-        # Assuming category_name is the name of the Category model field
+    if category_name and category_name!="None":        
         try:
             selected_category = all_categories.get(name__iexact=category_name)
         except Category.DoesNotExist:
@@ -111,17 +112,15 @@ def products(request):
         selected_category = None
         all_products = Product.objects.all()
     # Filter products by product_name if provided
-    if product_name:
-        # Assuming product_name is the name of the Product model field
+    if product_name:        
         all_products = all_products.filter(name__icontains=product_name)
 
     context = {
         'products': all_products,
         'categories': all_categories,
-        'selected_category': category_name,  # Pass the selected category name to highlight in the template
-        'selected_product': product_name,    # Pass the selected product name to highlight in the template
-        'purchase_cart': purchase_cart,
-        # 'session_card': session_card,  # Add the session card to the context
+        'selected_category': category_name, 
+        'selected_product': product_name, 
+        'purchase_cart': purchase_cart,        
     }
     return render(request, 'products.html', context)
 
@@ -257,6 +256,26 @@ def view_purchase_cart(request):
     }
     print(f"{context}")
     return render(request, 'cart.html', context)
+
+def delete_product_from_cart(request, product_id):
+    print("deleteing product from cart")
+    if request.method == 'POST':
+        try:
+            # Get the customer's PurchaseCard using the get_customer_cart function
+            purchase_cart = get_customer_cart(request)
+            
+            # Get the product to be deleted
+            product_to_delete = PurchaseLine.objects.filter(id=product_id, purchase=purchase_cart).first()
+            
+            if product_to_delete:
+                product_to_delete.delete()
+                print(f"Product {product_to_delete.product.name} deleted from cart")
+            else:
+                print(f"Product with ID {product_id} not found in cart")
+        except Exception as e:
+            print(f"Error deleting product from cart: {e}")
+    
+    return redirect('view_purchase_cart')
 
             
     

@@ -38,6 +38,7 @@
 					<div style="flex:1"><strong>Price</strong></div>
 					<div style="flex:1"><strong>Quantity</strong></div>
 					<div style="flex:1"><strong>Total</strong></div>
+					<div style="flex:1"></div>
 									
 				</div>
 			    {% for product in products %}
@@ -53,7 +54,18 @@
 						</div> 
 					</div>
 					<div style="flex:1"><p>{{product.get_total|floatformat:2}}</p></div>
+					<div>
+						<div>
+							<form method="post" action="{% url 'delete_product_from_cart' product.id %}">
+								{% csrf_token %}
+								<input type="hidden" name="product_id" value="{{ product.id }}">
+								<button type="submit" class="btn btn-danger">Delete</button>
+							</form>
+						</div>
+						
+					</div>
 				</div>
+				
                 {% endfor%}
 			</div>
 		</div>

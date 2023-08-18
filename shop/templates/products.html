@@ -26,8 +26,7 @@
       <!--form submit for buying product-->      
       <form method="POST" action="{% url 'add_to_cart' product.id %}" style="max-width: 400px;">
         {% csrf_token %}
-        <br>
-      
+        <br>      
         <input class="hidden" type="number" name="number" placeholder="Choose quantity" min="0" value="1" style="width: 60px;" /> 
         <input type="submit"  value="Add to Cart" class="btn btn-success"/>
       </form>

@@ -41,7 +41,7 @@ class PurchaseCard(models.Model):
         print("geting cart total items")
         orderitems = self.purchaseline_set.all()
         total = sum([item.get_total for item in orderitems])
-        print(f"the total price:{total}")
+        print(f"the total price for items is :{total}")
         return total
     
     @property
@@ -49,6 +49,7 @@ class PurchaseCard(models.Model):
         print("geting cart items")
         orderitems = self.purchaseline_set.all()
         total = sum([item.amount for item in orderitems])
+        print(f"the total cart items num is: {total}")
         return total
     
 class PurchaseLine(models.Model):
@@ -60,8 +61,8 @@ class PurchaseLine(models.Model):
 
     @property
     def get_total(self):
-        # print("calculate total")
+        # print("calculate total price for item")
         total = self.product.price * self.amount
-        # print(f"{total}")
+        # print(f"the total price for item is: {total}")
         return total
     
