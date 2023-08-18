@@ -139,28 +139,31 @@ def add_to_cart(request, product_id):
             try:
                 # Get the product
                 product = Product.objects.get(id=product_id)
+                if product.stock > 0:
+                    # Check if a PurchaseLine with the same product already exists in the cart
+                    existing_purchase_line = PurchaseLine.objects.filter(product=product, purchase=purchase_cart).first()
                 
-                # Check if a PurchaseLine with the same product already exists in the cart
-                existing_purchase_line = PurchaseLine.objects.filter(product=product, purchase=purchase_cart).first()
-                
-                if existing_purchase_line:
-                    # If it exists, update the amount
-                    existing_purchase_line.amount += number
-                    existing_purchase_line.save()
-                    print(f"Updated {number} {product.name} in PurchaseCard {purchase_cart.id}")
+                    if existing_purchase_line:
+                        # If it exists, update the amount
+                        existing_purchase_line.amount += number                    
+                        existing_purchase_line.save()
+                        print(f"Updated {number} {product.name} in PurchaseCard {purchase_cart.id}")
+                    else:
+                        # If it doesn't exist, create a new PurchaseLine instance
+                        purchase_line = PurchaseLine.objects.create(
+                            product=product,
+                            amount=number,
+                            purchase=purchase_cart
+                        )
+                        print(f"Added {number} {product.name} to PurchaseCard {purchase_cart.id}")
+                    product.stock = product.stock - number
+                    product.save()
                 else:
-                    # If it doesn't exist, create a new PurchaseLine instance
-                    purchase_line = PurchaseLine.objects.create(
-                        product=product,
-                        amount=number,
-                        purchase=purchase_cart
-                    )
-                    print(f"Added {number} {product.name} to PurchaseCard {purchase_cart.id}")
-                
+                    print("no stock for product")    
             except Exception as e:
                 print(f"Error adding product to PurchaseCard: {e}")
-    
-    return redirect('all_products')
+        
+        return redirect('all_products')
 
 def create_purchase_card(request):
     print("create purchase cart function entered !!!")
@@ -277,88 +280,9 @@ def delete_product_from_cart(request, product_id):
     
     return redirect('view_purchase_cart')
 
-            
-    
 
 
-#######
-##########
-
-    
-def buy_products(request):
-    # Get category_name and product_name from the GET request
-    category_name = request.GET.get('category_name')
-    product_name = request.GET.get('product_name')
-
-    # Get all categories
-    all_categories = Category.objects.all()
-
-    # Filter products by category_name if provided
-    if category_name:
-        # Assuming category_name is the name of the Category model field
-        try:
-            selected_category = all_categories.get(name__iexact=category_name)
-        except Category.DoesNotExist:
-            selected_category = None
-            all_products = Product.objects.none()
-        else:
-            # Filter products within the selected category
-            all_products = selected_category.product_set.all()
-    else:
-        selected_category = None
-        all_products = Product.objects.all()
-
-    # Filter products by product_name if provided
-    if product_name:
-        # Assuming product_name is the name of the Product model field
-        all_products = all_products.filter(name__icontains=product_name)
-
-    context = {
-        'products': all_products,
-        'categories': all_categories,
-        'selected_category': category_name,  # Pass the selected category name to highlight in the template
-        'selected_product': product_name,    # Pass the selected product name to highlight in the template
-    }
-    return render(request, 'buy_products.html', context)    
-
-def single_product(request, product_id):
-    product = Product.objects.get(id=product_id)
-    context = {
-        'product': product  # Replace 'data' with the data you want to pass to the template
-    }
-    # return HttpResponse(f"Single flight {flight}")
-    return render(request, 'single_flight.html', context)
 
 
-# def get_session_cart(request):
-#     print("get session function entered !!!")
-#     user = request.user
-#     cart_id = request.session.get('cart_id')
 
-#     if user.is_authenticated:
-#         print(f"Hi: {user}")
-#         try:
-#             print("checking if there is a purchase card with pending status")
-#             # Retrieve the purchase card with status "Pending"
-#             # user = request.user  # Get the current user
-#             purchase_card = PurchaseCard.objects.get(customer=user, status=Options.OPTION_TWO.value)
-#             # if purchase_card:
-#             print(f"pending purchase cart - {purchase_card}")
-#             return purchase_card                
-#             # else:
-#                 # If the user is not authenticated, create a new purchase card
-#                 # print("user not authenticated, creating new purchase card")
-#                 # return create_purchase_card(request)
-#         except PurchaseCard.DoesNotExist:
-#             print("purchase card not found with pending status")
-#             # If no open session found with the specified status, create a new one
-#             return create_purchase_card(request) 
-#     else:        
-#         cart_id = request.session.get('cart_id')
-#         if cart_id:            
-#          print(f"Existing cart ID: {cart_id}")
-#          return create_purchase_card(request)
-#         else:
-#             print("no cart ID in session, creating new purchase card")
-#             # If no cart ID in session, create a new purchase card
-#             return create_purchase_card(request)
+
