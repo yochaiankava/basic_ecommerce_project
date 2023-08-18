@@ -125,6 +125,7 @@ def products(request):
     return render(request, 'products.html', context)
 
 
+
 def add_to_cart(request, product_id):
     print("add product function entered !!!")
     
@@ -156,14 +157,15 @@ def add_to_cart(request, product_id):
                             purchase=purchase_cart
                         )
                         print(f"Added {number} {product.name} to PurchaseCard {purchase_cart.id}")
-                    product.stock = product.stock - number
-                    product.save()
+                    # product.stock = product.stock - number
+                    # product.save()
                 else:
                     print("no stock for product")    
             except Exception as e:
                 print(f"Error adding product to PurchaseCard: {e}")
         
         return redirect('all_products')
+
 
 def create_purchase_card(request):
     print("create purchase cart function entered !!!")
@@ -189,6 +191,7 @@ def create_purchase_card(request):
         # Handle any exceptions that may occur during creation
         print(f"Error creating purchase cart: {e}")
         return None
+
 
 def get_session_cart(request):
     print("get session function entered !!!")   
@@ -217,6 +220,7 @@ def get_customer_cart(request):
         return get_session_cart(request)        
 
 from .models import PurchaseLine
+
 
 def view_purchase_cart(request):
     print("view_purchase_cart function entered !!!")
@@ -260,6 +264,7 @@ def view_purchase_cart(request):
     print(f"{context}")
     return render(request, 'cart.html', context)
 
+
 def delete_product_from_cart(request, product_id):
     print("deleteing product from cart")
     if request.method == 'POST':
@@ -281,6 +286,37 @@ def delete_product_from_cart(request, product_id):
     return redirect('view_purchase_cart')
 
 
+from .models import Options, PurchaseCard
+
+def update_products_stock(request):
+    try:
+        purchase_cart = get_customer_cart(request)
+        all_products = Product.objects.all()
+
+        for product in all_products:
+            cart_product = purchase_cart.purchaseline_set.filter(product=product).first()
+            if cart_product:
+                updated_stock = product.stock - cart_product.amount
+                if updated_stock >= 0:
+                    product.stock = updated_stock
+                    product.save()
+                else:
+                    # Handle the case where the cart quantity exceeds available stock
+                    print(f"Insufficient stock for {product.name}")
+
+        # Update PurchaseCart status to 'Closed'
+        purchase_cart.status = Options.OPTION_THREE.value
+        purchase_cart.save()
+
+        return redirect('all_products')  
+    except Exception as e:
+        print(f"Error updating product stock: {e}")
+
+        
+
+        
+        
+    
 
 
 
