@@ -34,8 +34,9 @@ class PurchaseCard(models.Model):
     customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE) 
     status = models.CharField(max_length=50, choices=[(tag.name, tag.value) for tag in Options])  
     def __str__(self):
-        return f"{self.id} - {self.customer} - {self.status}"  
-    
+        return f"{self.date} - {self.customer} - {self.status}"  
+               
+        
     @property
     def get_cart_total(self):
         print("geting cart total items")

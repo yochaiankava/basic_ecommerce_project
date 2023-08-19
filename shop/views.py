@@ -2,8 +2,8 @@ from django.contrib.auth.models import User
 from django.contrib import messages
 from datetime import datetime
 from django.http import HttpResponse
-from django.shortcuts import render,redirect
-from shop.models import Category, MyUser, Product, PurchaseCard, PurchaseLine, Options
+from django.shortcuts import render, redirect, get_object_or_404
+from shop.models import *
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth import get_user_model
@@ -194,16 +194,25 @@ def create_purchase_card(request):
 
 
 def get_session_cart(request):
-    print("get session function entered !!!")   
-    cart_id = request.session.get('cart_id')
-    if cart_id:
-        purchase_cart = PurchaseCard.objects.get(id=cart_id, status=Options.OPTION_TWO.value)
-        print(f"pending purchase cart is: {purchase_cart}")
-        return purchase_cart                   
-    else:
-        print("no cart ID in session, creating new purchase cart")
-        # If no cart ID in session, create a new purchase cart
+    try:
+        print("get session function entered !!!")
+        cart_id = request.session.get('cart_id')
+        if cart_id:
+            purchase_cart = PurchaseCard.objects.get(id=cart_id, status=Options.OPTION_TWO.value)
+            print(f"pending purchase cart is: {purchase_cart}")
+            return purchase_cart
+        else:
+            print("no cart ID in session, creating new purchase cart")
+            # If no cart ID in session, create a new purchase cart
+            return create_purchase_card(request)
+    except PurchaseCard.DoesNotExist:
+        # Handle the case where the purchase card does not exist or status is not 'Pending'
+        print("Purchase card does not exist or status is not 'Pending'")
         return create_purchase_card(request)
+    except Exception as e:
+        print(f"Error in get_session_cart: {e}")
+        return None
+
             
 def get_customer_cart(request):
     
@@ -291,7 +300,17 @@ from .models import Options, PurchaseCard
 def update_products_stock(request):
     try:
         purchase_cart = get_customer_cart(request)
+        
+        if not purchase_cart.purchaseline_set.exists():
+            # Empty cart, delete the purchase_cart
+            purchase_cart.delete()
+            print("purchase cart deleted")
+            return redirect('all_products')
+        
+        
         all_products = Product.objects.all()
+        
+            
 
         for product in all_products:
             cart_product = purchase_cart.purchaseline_set.filter(product=product).first()
@@ -305,6 +324,9 @@ def update_products_stock(request):
                     print(f"Insufficient stock for {product.name}")
 
         # Update PurchaseCart status to 'Closed'
+        # total =  purchase_cart.purchase_cartget_cart_items()
+        # print(f"{total}")    
+        
         purchase_cart.status = Options.OPTION_THREE.value
         purchase_cart.save()
 
@@ -313,10 +335,36 @@ def update_products_stock(request):
         print(f"Error updating product stock: {e}")
 
         
+def get_purchases_cart_history(request):
+    if request.user.is_authenticated:
+        print(f"Logged-in user: {request.user.username}")
+        customer = request.user
 
+        closed_status = Options.OPTION_THREE  
+        closed_carts = PurchaseCard.objects.filter(customer=customer, status=closed_status.value)
+        total_cart_total = sum(cart.get_cart_total for cart in closed_carts)
         
+            
+            
+        context = {
+            'closed_carts': closed_carts,
+            'total_cart_total': total_cart_total,
+        }
+
+        return render(request, 'carts_history.html', context)
+    else:
+        print("User is not authenticated")
+        return redirect('all_products') 
         
+def view_cart_details(request, cart_id):
+    closed_status = Options.OPTION_THREE 
+    cart = get_object_or_404(PurchaseCard, status=closed_status.value, id=cart_id)
+    print(f"{cart}")
+    context = {
+        'cart': cart,
+    }
     
+    return render(request, 'cart_details.html', context)    
 
 
 

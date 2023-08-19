@@ -23,10 +23,14 @@
 					
 					<tr>
 						<th><h5>Items: <strong>{{ purchase_cart.get_cart_items }}</strong></h5></th>
-                        <th><h5>Total: <strong>{{ purchase_cart.get_cart_total|floatformat:2 }}</strong></h5></th>						
+                        <th><h5>Total: <strong>{{ purchase_cart.get_cart_total|floatformat:2 }}</strong></h5></th>	
+						<th>
+							<a style="float:right; margin:10px;" class="btn btn-success" href="{% url 'get_purchases_cart_history' %}">Carts History</a>
+						</th>
 						<th>
 							<a style="float:right; margin:10px;" class="btn btn-success" href="{% url 'update_products_stock' %}">Checkout</a>
-						</th>
+						</th>					
+						
 						
 					</tr>
 				

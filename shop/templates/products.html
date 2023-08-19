@@ -1,37 +1,67 @@
 {% extends 'base.html' %} {% load static %}{% block content %}
 
 <!--search product form-->
-<div class="container-fluid bg-3 text-center">  
+<div class="container-fluid bg-3 text-center">
   <form action="{% url 'all_products' %}">
     <!-- Hidden input for category_name -->
-    {% comment %} <input type="hidden" name="category_name" value="{{ selected_category }}"> {% endcomment %}
-    <input placeholder="Search product" aria-label="Search" name="product_name"/>
-    <input type="submit" value="Search" class="btn btn-success" style="background-color: #006400; border-color: #006400;"/>
-  </form>  
-<!--end search product form-->  
+    {% comment %}
+    <input type="hidden" name="category_name" value="{{ selected_category }}" />
+    {% endcomment %}
+    <input
+      placeholder="Search product"
+      aria-label="Search"
+      name="product_name"
+    />
+    <input
+      type="submit"
+      value="Search"
+      class="btn btn-success"
+      style="background-color: #006400; border-color: #006400"
+    />
+  </form>
+  <!--end search product form-->
 
   <!--display products + stock amuunt-->
   <h2>Products:</h2>
   <br />
   <div class="row">
     {% for product in products %}
-    <div class="col-sm-3">
-      <p>{{ product.name }}</p>
-      <p>Stock:{{ product.stock }}</p>
-      <a>
-      <img src="{% static product.image %}" class="img-responsive" style="width: 60%; height: 200px;" alt="Image" />
-      </a>
-      <!--end display products + stock amount-->
+    <br />
+    <div class="col-lg-3">
+      <!--display products + stock amount-->
+      <div class="box-element product">
+        <img
+          src="{% static product.image %}"
+          class="img-responsive"
+          style="width: 60%; height: 200px"
+          alt="Image"
+        />
+        <p>{{ product.name }}</p>
+        <p>Stock:{{ product.stock }}</p>
+        <p>Price:{{ product.price }}</p>
+        <!--end display products + stock amount-->
 
-      <!--form submit for buying product-->      
-      <form method="POST" action="{% url 'add_to_cart' product.id %}" style="max-width: 400px;">
-        {% csrf_token %}
-        <br>      
-        <input type="number" name="number" placeholder="Choose quantity" min="0" value="1" style="width: 60px;" /> 
-        <input type="submit"  value="Add to Cart" class="btn btn-success"/>
-      </form>
-      <!--end form submit for buying product-->
-
+        <!--form submit for buying product-->
+        <form
+          method="POST"
+          action="{% url 'add_to_cart' product.id %}"
+          style="max-width: 400px"
+        >
+          {% csrf_token %}
+          <br />
+          <input
+            type="number"
+            name="number"
+            placeholder="Choose quantity"
+            min="0"
+            value="1"
+            style="width: 60px"
+          />
+          <input type="submit" value="Add to Cart" class="btn btn-success" />
+        </form>
+        <!--end form submit for buying product-->
+        <br />
+      </div>
     </div>
     {% empty %}
     <li>No products available.</li>
