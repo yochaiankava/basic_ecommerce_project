@@ -323,10 +323,7 @@ def update_products_stock(request):
                     # Handle the case where the cart quantity exceeds available stock
                     print(f"Insufficient stock for {product.name}")
 
-        # Update PurchaseCart status to 'Closed'
-        # total =  purchase_cart.purchase_cartget_cart_items()
-        # print(f"{total}")    
-        
+        # Update PurchaseCart status to 'Closed'        
         purchase_cart.status = Options.OPTION_THREE.value
         purchase_cart.save()
 
@@ -342,8 +339,7 @@ def get_purchases_cart_history(request):
 
         closed_status = Options.OPTION_THREE  
         closed_carts = PurchaseCard.objects.filter(customer=customer, status=closed_status.value)
-        total_cart_total = sum(cart.get_cart_total for cart in closed_carts)
-        
+        total_cart_total = sum(cart.get_cart_total for cart in closed_carts)       
             
             
         context = {

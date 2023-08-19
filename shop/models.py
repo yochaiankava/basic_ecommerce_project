@@ -62,8 +62,8 @@ class PurchaseLine(models.Model):
 
     @property
     def get_total(self):
-        # print("calculate total price for item")
+        print("calculate total price for item")
         total = self.product.price * self.amount
-        # print(f"the total price for item is: {total}")
+        print(f"the total price for item is: {total}")
         return total
     
